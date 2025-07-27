@@ -1,5 +1,7 @@
 import click
+import sys
 import re
+from types import SimpleNamespace
 import os
 import pexpect
 import subprocess
@@ -9,79 +11,46 @@ from queue import Queue, Empty
 from threading import Thread
 
 
-def stderr_no_output(line):
-    print(f"stderr has output: -{line}-", flush=True)
-    os._exit(1)
-
-
-class ReadPipe:
-    def __init__(self, pipe, callback=None):
-        self.queue = Queue()
-        self.pipe = pipe
-
-        if callback is None:
-            callback = self.append_queue
-        self.callback = callback
-        self.thread = Thread(target=self.run)
-        self.thread.start()
-
-    def append_queue(self, line):
-        self.queue.put(line)
-
-    def readline(self):
+def stderr_no_output(f, exit):
+    while not exit.exit:
+        has_output = False
         try:
-            line = self.queue.get_nowait()  # or q.get(timeout=.1)
-            return line
-        except Empty:
-            return None
-
-    def read_until(self, regex_str):
-        regex = re.compile(regex_str)
-        while True:
-            line = self.readline()
-            if not line:
-                continue
-            if regex.search(line):
-                print(f"matched {line}")
-                return
-            print(line)
-            continue
+            for line in open(f):
+                has_output = True
+                print(f"stderr {f} has output: -{line}-", flush=True)
+            if has_output:
+                os._exit(1)
+        except FileNotFoundError:
             pass
-
-    def run(self):
-        for line in iter(self.pipe.readline, b""):
-            self.callback(line)
-
-    def join(self):
-        self.thread.join()
 
 
 @click.command()
 @click.option("--gdb", help="which gdb to test")
 @click.option("--binary", help="which binary to test")
 def main(gdb, binary):
+    os.environ["NO_COLOR"] = "1"
     print(f"binary is {binary}, gdb is {gdb}")
 
-    process = subprocess.Popen(
-        [gdb, "-nh", "-nx"], stdout=PIPE, stdin=PIPE, stderr=PIPE, text=True
+    stderr_log = f"{os.path.basename(binary)}.log"
+    os.remove(stderr_log)
+
+    shell_command = f'"{gdb}" -nh -nx {binary} 2>{stderr_log}'
+    process = pexpect.spawn(
+        "/bin/bash",
+        ["-c", shell_command],
     )
+    process.logfile = sys.stdout.buffer
 
-    std_out = ReadPipe(process.stdout)
-    std_err = ReadPipe(process.stderr, stderr_no_output)
+    exit = SimpleNamespace(exit=False)
+    thread = Thread(target=stderr_no_output, args=(stderr_log, exit))
+    thread.start()
 
-    std_out.read_until(f"Reading symbols from {binary}\.\.\.")
-    # std_out.read_until(
-    #    'Type "apropos word" to search for commands related to "word"...'
-    # )
-    # process.stdin.write("r\n")
+    process.expect(f"Reading symbols from {binary}\.\.\.")
 
-    # std_out.read_until("Inferior 1 (process \d+) exited normally]")
-    print("want to exit", flush=True)
-    process.stdin.write("q\n\r")
-
-    print("begin wait ")
-    process.wait()
-    print("wait finished")
+    process.sendline("q")
+    process.expect(pexpect.EOF)
+    exit.exit = True
+    thread.join()
 
     pass
 
