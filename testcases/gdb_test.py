@@ -1,58 +1,12 @@
 import click
-import sys
-import re
-from types import SimpleNamespace
-import os
-import pexpect
-import subprocess
-import time
-from subprocess import Popen, PIPE, STDOUT
-from queue import Queue, Empty
-from threading import Thread
-
-
-def stderr_no_output(f, exit):
-    while not exit.exit:
-        has_output = False
-        try:
-            for line in open(f):
-                has_output = True
-                print(f"stderr {f} has output: -{line}-", flush=True)
-            if has_output:
-                os._exit(1)
-        except FileNotFoundError:
-            pass
+import run_under_gdb
 
 
 @click.command()
 @click.option("--gdb", help="which gdb to test")
 @click.option("--binary", help="which binary to test")
 def main(gdb, binary):
-    os.environ["NO_COLOR"] = "1"
-    print(f"binary is {binary}, gdb is {gdb}")
-
-    stderr_log = f"{os.path.basename(binary)}.log"
-    os.remove(stderr_log)
-
-    shell_command = f'"{gdb}" -nh -nx {binary} 2>{stderr_log}'
-    process = pexpect.spawn(
-        "/bin/bash",
-        ["-c", shell_command],
-    )
-    process.logfile = sys.stdout.buffer
-
-    exit = SimpleNamespace(exit=False)
-    thread = Thread(target=stderr_no_output, args=(stderr_log, exit))
-    thread.start()
-
-    process.expect(f"Reading symbols from {binary}\.\.\.")
-
-    process.sendline("q")
-    process.expect(pexpect.EOF)
-    exit.exit = True
-    thread.join()
-
-    pass
+    run_under_gdb.run(gdb, binary)
 
 
 if __name__ == "__main__":
