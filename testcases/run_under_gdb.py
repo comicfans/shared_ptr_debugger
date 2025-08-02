@@ -20,7 +20,7 @@ def stderr_no_output(f, exit):
             pass
 
 
-def run(gdb, init, binary):
+def run(gdb, init, binary, commands):
     os.environ["NO_COLOR"] = "1"
     print(f"binary is {binary}, gdb is {gdb}")
 
@@ -39,6 +39,9 @@ def run(gdb, init, binary):
     thread.start()
 
     process.expect(f"Reading symbols from {binary}\.\.\.")
+
+    for line in commands:
+        process.sendline(line)
 
     process.sendline("q")
     process.expect(pexpect.EOF)
