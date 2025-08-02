@@ -42,10 +42,10 @@ def parse_file_functions(lines) -> pd.DataFrame:
     )
 
 
-print(parse_file_functions(open("input.txt").readlines())["function"].to_list())
+# print(parse_file_functions(open("input.txt").readlines())["function"].to_list())
 
 
-df = parse_file_functions(open("input.txt").readlines())
+# df = parse_file_functions(open("input.txt").readlines())
 
 
 def filter_shared_ptr(df: pd.DataFrame) -> pd.DataFrame:
