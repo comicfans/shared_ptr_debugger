@@ -4,7 +4,7 @@ on:
   push:
     branches: [master]
   pull_request:
-    types: [opened, reopened]
+    types: [opened, synchronize, reopened]
 
 jobs:
   build:
@@ -13,6 +13,8 @@ jobs:
     steps:
       - name: Check out repository code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: prepare environment
         run: |
           sudo apt-get update
@@ -38,3 +40,9 @@ jobs:
           source venv/bin/activate
           cd build
           ctest -VV
+      - name: gate on coverage
+        run: |
+          source venv/bin/activate
+          cd python
+          diff-cover coverage.xml --fail-under=100 --compare-branch origin/master
+
