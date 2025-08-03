@@ -5,7 +5,7 @@ def test_parse_file_functions_incorrect_str_correct_type(request):
     rootdir = request.config.rootdir
     lines = open(rootdir / "tests" / "input.txt").read()
     df = parse_file_functions(lines)
-    filtered = filter_shared_ptr(df)
+    filtered = filter_shared_ptr(df)  # noqa: F841
 
 
 def test_filter_shared_ptr(request):
@@ -29,7 +29,7 @@ def test_filter_shared_ptr(request):
 def test_parse_file_functions_empty_correct_type():
     lines = []
     df = parse_file_functions(lines)
-    filtered = filter_shared_ptr(df)
+    filtered = filter_shared_ptr(df)  # noqa: F841
 
 
 def test_parse_file_functions(request):
