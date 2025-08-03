@@ -1,4 +1,5 @@
 import gdb
+import pickle
 
 from .leak_helper_gdb import parse_file_functions, filter_shared_ptr
 
@@ -17,7 +18,8 @@ class ListLeakBreak(gdb.Command):
         filtered = filter_shared_ptr(df)
 
         if arg is not None:
-            df.to_csv(arg)
+            with open(arg, "wb") as f:
+                pickle.dump(filtered, f)
         else:
             for row in filtered["function"]:
                 print(row)

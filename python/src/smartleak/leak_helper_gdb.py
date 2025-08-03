@@ -58,7 +58,8 @@ def parse_file_functions(lines) -> pd.DataFrame:
 
 
 def filter_shared_ptr(df: pd.DataFrame) -> pd.DataFrame:
-    # TODO we can analysis these function from clang
+    # catelog all function to common breakpoints and typed breakpoints
+    #
 
     func_regex = dict(
         copy_constructor=r"^void std::shared_ptr<(.+)>::shared_ptr\(std::shared_ptr<\1> const&\)$",
@@ -69,15 +70,47 @@ def filter_shared_ptr(df: pd.DataFrame) -> pd.DataFrame:
         assign_operator=r"^std::shared_ptr<(.+)> &std::shared_ptr<\1>::operator=\(std::shared_ptr<\1> const&\)$",
     )
 
-    list_df = []
+    typed_df = []
     for function_type, regex in func_regex.items():
         this_df = df[df["function"].str.match(regex)].copy()
+
+        if len(this_df) == 0:
+            continue
 
         this_df["function_type"] = function_type
         capture_groups = this_df["function"].str.extract(regex)
 
         this_df["template_type"] = capture_groups[0]
-        list_df.append(this_df)
+        typed_df.append(this_df)
 
-    all_types = pd.concat(list_df, ignore_index=True)
-    return all_types
+    common_regex = {
+        "add_ref_copy": r"^void std::_Sp_counted_base<.*>::_M_add_ref_copy\(\)$",
+        "add_ref_lock_nothrow": r"^bool std::_Sp_counted_base<.*>::_M_add_ref_lock_nothrow\(\)$",
+        "destroy": r"^void std::_Sp_counted_base<.*>::_M_destroy\(\)$",
+        "release": r"^void std::_Sp_counted_base<.*>::_M_release\(\)$",
+    }
+
+    common_df = []
+    for type, regex in common_regex.items():
+        this_df = df[df["function"].str.match(regex)].copy()
+
+        if len(this_df) == 0:
+            continue
+
+        this_df["function_type"] = type
+        common_df.append(this_df)
+
+    if len(typed_df) == 0:
+        typed = df.iloc[[]].copy()
+        typed["function_type"] = ""
+        typed["template_type"] = ""
+    else:
+        typed = pd.concat(typed_df, ignore_index=True)
+
+    if len(common_df) == 0:
+        common = df.iloc[[]].copy()
+        common["function_type"] = ""
+    else:
+        common = pd.concat(common_df, ignore_index=True)
+
+    return dict(typed=typed, common=common)

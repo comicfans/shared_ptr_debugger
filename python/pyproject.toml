@@ -27,8 +27,14 @@ test = ["pytest", "pytest-cov"]
 
 [tool.pytest.ini_options]
 minversion = "7.0"
-addopts = "--tb=long"
+addopts = "--tb=long --cov=smartleak --cov-report lcov:lcov.info --cov-report term"
 testpaths = ["tests"]
+
+[tool.coverage.run]
+omit = [
+    "src/smartleak/leak_cmd_gdb.py"
+]
+
 
 [project.urls]
 Homepage = "https://github.com/comicfans/smartleak"

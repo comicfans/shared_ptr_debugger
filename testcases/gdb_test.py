@@ -7,10 +7,6 @@ import sys
 
 
 def test_default_run():
-    output = "test.csv"
-    if os.path.exists(output):
-        os.unlink(output)
-
     run_under_gdb.run(
         pytest.my_global_variable.gdb,
         pytest.my_global_variable.init,
@@ -20,7 +16,7 @@ def test_default_run():
 
 
 def test_hook_functions(request):
-    output = f"{request.node.name}.csv"
+    output = "test.pickle"
     if os.path.exists(output):
         os.unlink(output)
 
