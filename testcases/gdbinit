@@ -1,0 +1,5 @@
+python
+from smartleak import leak_cmd_gdb
+end
+
+set pagination off

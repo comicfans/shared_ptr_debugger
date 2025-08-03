@@ -1,0 +1,37 @@
+[project]
+name = "smartleak"
+version = "0.0.1"
+description = "Debugging C++ shared_ptr reference cycles from Python"
+authors = [
+    { name="comicfans", email="comicfans44@gmail.com" }
+]
+readme = "README.md"
+requires-python = ">=3.8"
+keywords = ["cpp", "debug", "memory", "shared_ptr", "leak"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: C++",
+    "Topic :: Software Development :: Debuggers",
+]
+
+
+
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project.optional-dependencies]
+test = ["pytest", "pytest-cov"]
+
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = "--tb=long"
+testpaths = ["tests"]
+
+[project.urls]
+Homepage = "https://github.com/comicfans/smartleak"
+Issues = "https://github.com/comicfans/smartleak/issues"
+
+
