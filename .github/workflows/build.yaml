@@ -16,7 +16,7 @@ jobs:
       - name: Install gdb
         run: |
           sudo apt-get update
-          sudo apt-get install gdb
+          sudo apt-get install gdb python3-pytest
       - name: configure
         run: |
           mkdir build
