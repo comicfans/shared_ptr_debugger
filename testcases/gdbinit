@@ -1,4 +1,9 @@
 python
+
+import sys
+print(sys.path)
+
+
 from smartleak import leak_cmd_gdb
 end
 
