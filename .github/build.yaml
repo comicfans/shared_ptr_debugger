@@ -1,0 +1,30 @@
+name: Build
+on:
+  workflow_dispatch:
+  push:
+    branches: [master]
+  pull_request:
+    types: [opened, reopened]
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    name: Gcc and GDB
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+      - name: Install gdb
+        run: |
+          sudo apt-get update
+          sudo apt-get install gdb
+      - name: configure
+        run: |
+          mkdir build
+          cd build
+          cmake ../ -G Ninja
+      - name: ninja build
+        run: |
+          cd build
+          ninja
+          
+
