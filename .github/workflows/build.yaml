@@ -26,5 +26,9 @@ jobs:
         run: |
           cd build
           ninja
+      - name: ctest
+        run: |
+          cd build
+          ctest -VV
           
 
