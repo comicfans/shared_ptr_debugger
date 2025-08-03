@@ -39,5 +39,3 @@ omit = [
 [project.urls]
 Homepage = "https://github.com/comicfans/smartleak"
 Issues = "https://github.com/comicfans/smartleak/issues"
-
-
