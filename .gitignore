@@ -1,3 +1,4 @@
 build
 **/__pycache__/*
 python/src/smartleak.egg-info
+python/venv
