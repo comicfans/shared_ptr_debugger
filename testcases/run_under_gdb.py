@@ -1,10 +1,8 @@
 import sys
 import tempfile
 import time
-from types import SimpleNamespace
 import os
 import pexpect
-from threading import Thread
 
 
 def stderr_no_output(f, exit):
