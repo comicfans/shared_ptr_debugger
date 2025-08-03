@@ -38,5 +38,3 @@ jobs:
           source venv/bin/activate
           cd build
           ctest -VV
-          
-

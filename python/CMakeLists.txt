@@ -1,5 +1,5 @@
 add_test(NAME "python_package_test"
-  COMMAND ${Python3_EXECUTABLE} -m pip install -e ".[dev]"
+  COMMAND ${Python3_EXECUTABLE} -m pip install -e .
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
