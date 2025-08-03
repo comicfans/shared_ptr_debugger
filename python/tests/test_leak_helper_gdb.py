@@ -15,6 +15,16 @@ def test_filter_shared_ptr(request):
 
     filtered = filter_shared_ptr(df)
 
+    typed = filtered["typed"]
+
+    for expect_type in ["int"]:
+        assert len(typed[typed["template_type"] == expect_type]) != 0
+
+    common = filtered["common"]
+
+    for expect_type in ["add_ref_copy", "add_ref_lock_nothrow", "destroy", "release"]:
+        assert len(common[common["function_type"] == expect_type]) != 0
+
 
 def test_parse_file_functions_empty_correct_type():
     lines = []

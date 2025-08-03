@@ -17,7 +17,7 @@ class ListLeakBreak(gdb.Command):
         filtered = filter_shared_ptr(df)
 
         if arg is not None:
-            df.to_csv(arg)
+            filtered.to_csv(arg)
         else:
             for row in filtered["function"]:
                 print(row)
