@@ -4,7 +4,7 @@ on:
   push:
     branches: [master]
   pull_request:
-    types: [opened, reopened]
+    types: [opened, synchronize, reopened]
 
 jobs:
   build:
@@ -13,6 +13,9 @@ jobs:
     steps:
       - name: Check out repository code
         uses: actions/checkout@v4
+      - name: fetch origin master
+        run: |
+          git fetch origin master
       - name: prepare environment
         run: |
           sudo apt-get update
