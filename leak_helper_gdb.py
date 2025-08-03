@@ -49,12 +49,6 @@ def parse_file_functions(lines) -> pd.DataFrame:
 
 
 def filter_shared_ptr(df: pd.DataFrame) -> pd.DataFrame:
-    copy_constructor = df[df.function.str.fullmatch()].copy()
-
-    copy_constructor["type"] = copy_constructor["function"].str.extract(
-        r"^std::shared_ptr<([^>]+)>\s+std::weak_ptr<\1>::lock\(\)\s+const$"
-    )
-
     # TODO we can analysis these function from clang
 
     func_regex = dict(
@@ -66,4 +60,13 @@ def filter_shared_ptr(df: pd.DataFrame) -> pd.DataFrame:
         assign_operator=r"^std::shared_ptr<(.+)> &std::shared_ptr<\1>::operator=(std::shared_ptr<\1> const&)$",
     )
 
-    pass
+    list_df = []
+    for type, regex in func_regex.items():
+        this_df = df[df["function"].str.contains(regex, regex=True)]
+
+        this_df["type"] = type
+
+        list_df.append(this_df)
+
+    all_types = pd.concat(list_df, ignore_index=True)
+    return all_types

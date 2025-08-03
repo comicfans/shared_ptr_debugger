@@ -1,4 +1,5 @@
 import sys
+import tempfile
 import time
 from types import SimpleNamespace
 import os
@@ -12,21 +13,17 @@ def stderr_no_output(f, exit):
             time.sleep(2)
             if os.path.getsize(f) == 0:
                 continue
-
-            for line in open(f):
-                print(f"GDB_STDERR:{line}", flush=True)
-            os._exit(1)
+            return
         except FileNotFoundError:
             pass
 
 
 def run(gdb, init, binary, commands):
     os.environ["NO_COLOR"] = "1"
-    print(f"binary is {binary}, gdb is {gdb}")
 
-    stderr_log = f"{os.path.basename(binary)}.log"
-    os.remove(stderr_log)
+    stderr_log = tempfile.NamedTemporaryFile(delete=False).name
 
+    print(f"binary is {binary}, gdb is {gdb}, stderr_log is {stderr_log}")
     shell_command = f'"{gdb}" --nh --nx -ix {init} {binary} 2>{stderr_log}'
     process = pexpect.spawn(
         "/bin/bash",
@@ -34,9 +31,9 @@ def run(gdb, init, binary, commands):
     )
     process.logfile = sys.stdout.buffer
 
-    exit = SimpleNamespace(exit=False)
-    thread = Thread(target=stderr_no_output, args=(stderr_log, exit))
-    thread.start()
+    # exit = SimpleNamespace(exit=False)
+    # thread = Thread(target=stderr_no_output, args=(stderr_log, exit))
+    # thread.start()
 
     process.expect(f"Reading symbols from {binary}\.\.\.")
 
@@ -45,7 +42,9 @@ def run(gdb, init, binary, commands):
 
     process.sendline("q")
     process.expect(pexpect.EOF)
-    exit.exit = True
-    thread.join()
+    # exit.exit = True
+    # thread.join()
 
-    pass
+    if os.path.getsize(stderr_log) != 0:
+        lines = open(stderr_log).read()
+        raise ValueError(lines)

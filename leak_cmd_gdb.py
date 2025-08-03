@@ -1,6 +1,6 @@
 import gdb
 
-import leak_cmd_gdb
+from leak_helper_gdb import parse_file_functions, filter_shared_ptr
 
 
 class ListLeakBreak(gdb.Command):
@@ -12,7 +12,15 @@ class ListLeakBreak(gdb.Command):
     def invoke(self, arg, from_tty):
         lines = gdb.execute("info functions", from_tty, True)
 
-        print(len(lines))
+        df = parse_file_functions(lines)
+
+        filtered = filter_shared_ptr(df)
+
+        for row in filtered["function"]:
+            print(row)
+
+        if arg is not None:
+            df.to_csv(arg)
 
 
 class AutoTrace(gdb.Command):
