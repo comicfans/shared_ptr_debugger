@@ -12,4 +12,3 @@ add_test(NAME  "python_test"
 set_tests_properties("python_test" PROPERTIES
     FIXTURES_REQUIRED "python_package_test"
   )
-
