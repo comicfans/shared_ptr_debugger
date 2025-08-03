@@ -2,7 +2,7 @@ python
 
 import sys
 print(sys.path)
-
+print(sys.executable)
 
 from smartleak import leak_cmd_gdb
 end
