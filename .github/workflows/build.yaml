@@ -13,9 +13,8 @@ jobs:
     steps:
       - name: Check out repository code
         uses: actions/checkout@v4
-      - name: fetch origin master
-        run: |
-          git fetch origin master
+        with:
+          fetch-depth: 0
       - name: prepare environment
         run: |
           sudo apt-get update
