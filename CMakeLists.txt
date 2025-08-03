@@ -1,6 +1,5 @@
-PROJECT(shared_ptr_debugger)
-
 CMAKE_MINIMUM_REQUIRED(VERSION 3.22)
+PROJECT(shared_ptr_debugger)
 
 SET(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules)
 
