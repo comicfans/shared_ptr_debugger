@@ -16,19 +16,26 @@ jobs:
       - name: prepare environment
         run: |
           sudo apt-get update
-          sudo apt-get install gdb python3-pytest python3-pandas
-          python3 -m pip install --upgrade pip
+          sudo apt-get install gdb
+      - name: create venv
+        run: |
+          python -m venv venv
+          source venv/bin/activate
+          pip install -r requirements.txt
       - name: configure
         run: |
+          source venv/bin/activate
           mkdir build
           cd build
           cmake ../ -G Ninja
       - name: ninja build
         run: |
+          source venv/bin/activate
           cd build
           ninja
       - name: ctest
         run: |
+          source venv/bin/activate
           cd build
           ctest -VV
           

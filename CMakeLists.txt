@@ -15,7 +15,7 @@ endif()
 
 FOREACH(MODULE pytest pip)
   execute_process(
-    COMMAND ${Python3_EXECUTABLE} -m pytest --version
+    COMMAND ${Python3_EXECUTABLE} -m ${MODULE} --version
     RESULT_VARIABLE "${MODULE}_EXIT_CODE"
     OUTPUT_VARIABLE "${MODULE}_VERSION"
     ERROR_VARIABLE "${MODULE}_ERROR"
