@@ -8,7 +8,7 @@ def parse_file_functions(lines) -> pd.DataFrame:
     file_header = None
 
     file_regex = re.compile(r"File (.*):")
-    number_func = re.compile(r"(\d+): *(.*);")
+    number_func = re.compile(r"(\d+):\s*(.*);")
 
     file_funcs = defaultdict(list)
 
@@ -57,7 +57,7 @@ def parse_file_functions(lines) -> pd.DataFrame:
 # df = parse_file_functions(open("input.txt").readlines())
 
 
-def filter_shared_ptr(df: pd.DataFrame) -> pd.DataFrame:
+def filter_shared_ptr(df: pd.DataFrame) -> dict[str : pd.DataFrame]:
     # catelog all function to common breakpoints and typed breakpoints
     #
 

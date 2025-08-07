@@ -1,4 +1,5 @@
 import click
+import pickle
 import os
 from types import SimpleNamespace
 import run_under_gdb
@@ -28,8 +29,13 @@ def test_hook_functions(request):
             f"list_leak_break {output}",
         ],
     )
-
     assert os.path.exists(output)
+    readback = pickle.load(open(output, "rb"))
+
+    common_df = readback["common"]
+    assert len(common_df) != 0
+    typed_df = readback["typed"]
+    assert len(typed_df) != 0
 
 
 @click.command()
