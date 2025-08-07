@@ -8,7 +8,7 @@ def parse_file_functions(lines) -> pd.DataFrame:
     file_header = None
 
     file_regex = re.compile(r"File (.*):")
-    number_func = re.compile(r"(\d+): *(.*);")
+    number_func = re.compile(r"(\d+):\s*(.*);")
 
     file_funcs = defaultdict(list)
 
