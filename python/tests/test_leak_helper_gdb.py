@@ -1,5 +1,4 @@
 from smartleak.leak_helper_gdb import parse_file_functions, filter_shared_ptr
-import pickle
 
 
 def test_parse_file_functions_incorrect_str_correct_type(request):
