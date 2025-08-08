@@ -114,52 +114,6 @@ def filter_shared_ptr(df: pd.DataFrame) -> dict[str : pd.DataFrame]:
     return dict(typed=typed, common=common)
 
 
-class ReusableId:
-    """a unique id generator for resuable objects
-
-    for thread/mem_address, they can be recycled and reused
-    we need to distinguish them during whole program lifetime
-
-    """
-
-    def __init__(self):
-        self.alive = dict()
-        self.recycled = dict()
-
-    def is_alive(self, resuable) -> bool:
-        return resuable in self.alive
-
-    def unique_by(self, resuable) -> tuple[int, Any]:
-        try_alive = self.alive.get(resuable)
-
-        if try_alive:
-            return try_alive
-
-        # not alive, check if duplicate recycled
-        duplicate = self.recycled.get(resuable)
-        if not duplicate:
-            self.alive[resuable] = 0
-            return (0, resuable)
-
-        # duplicate with existing
-        this_counter = duplicate + 1
-        self.alive[resuable] = this_counter
-        return (this_counter, resuable)
-
-    def destroy_resuable(self, resuable):
-        this_counter = self.alive[resuable]
-
-        if this_counter == 0:
-            assert resuable not in self.recycled, "recycle a resuable that is not alive"
-        else:
-            assert this_counter == self.recycled[resuable] + 1, (
-                "recycle a resuable that is not the last alive"
-            )
-
-        self.recycled[resuable] = this_counter
-        del self.alive[resuable]
-
-
 def db_init(file: str):
     con = sqlite3.connect(file)
     cur = con.cursor()
