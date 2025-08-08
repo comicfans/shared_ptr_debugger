@@ -6,13 +6,18 @@ on:
 
 jobs:
   pre-commit:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Check out repository code
         uses: actions/checkout@v4
-      - name: install pre-commit
+
+      - name: create venv
         run: |
-          pip3 install pre-commit
-      - name: run pre-commit on all files
+          python -m venv venv
+          source venv/bin/activate
+          pip install pre-commit
+
+      - name: run pre-commit
         run: |
+          source venv/bin/activate
           pre-commit run --all-files
