@@ -18,7 +18,13 @@ def test_save_recording(request):
         pytest.my_global_variable.gdb,
         pytest.my_global_variable.init,
         pytest.my_global_variable.binary,
-        [f"break_leak_function {output}", "r"],
+        [
+            (
+                f"break_leak_function {output}",
+                r"\(gdb\)",
+            ),
+            ("r", r"\[Inferior \d+ \(process \d+\) exited normally\]"),
+        ],
     )
 
     assert os.path.exists(output)
