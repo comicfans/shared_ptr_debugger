@@ -47,7 +47,7 @@ class CommonBreak(gdb.Breakpoint):
         )
 
         records.append_event(self.info)
-        return True
+        return False
 
 
 class TypedLeakTraceBreak(CommonBreak):

@@ -7,7 +7,24 @@ import pytest
 import sys
 
 
-def test_default_run():
+def test_save_recording(request):
+    pwd = os.getcwd()
+    output = f"{pwd}/{request.node.name}.sqlite3"
+
+    if os.path.exists(output):
+        os.unlink(output)
+
+    run_under_gdb.run(
+        pytest.my_global_variable.gdb,
+        pytest.my_global_variable.init,
+        pytest.my_global_variable.binary,
+        [f"break_leak_function {output}", "r"],
+    )
+
+    assert os.path.exists(output)
+
+
+def test_default_import():
     run_under_gdb.run(
         pytest.my_global_variable.gdb,
         pytest.my_global_variable.init,
@@ -17,7 +34,7 @@ def test_default_run():
 
 
 def test_hook_functions(request):
-    output = "test.pickle"
+    output = f"{request.node.name}.pickle"
     if os.path.exists(output):
         os.unlink(output)
 
