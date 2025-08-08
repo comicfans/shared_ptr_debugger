@@ -1,6 +1,10 @@
 import re
-from itertools import chain
+import sqlite3
+import json
+from typing import Any
 from collections import defaultdict
+from itertools import chain
+
 import pandas as pd
 
 
@@ -49,12 +53,6 @@ def parse_file_functions(lines) -> pd.DataFrame:
             ),
         )
     )
-
-
-# print(parse_file_functions(open("input.txt").readlines())["function"].to_list())
-
-
-# df = parse_file_functions(open("input.txt").readlines())
 
 
 def filter_shared_ptr(df: pd.DataFrame) -> dict[str : pd.DataFrame]:
@@ -114,3 +112,108 @@ def filter_shared_ptr(df: pd.DataFrame) -> dict[str : pd.DataFrame]:
         common = pd.concat(common_df, ignore_index=True)
 
     return dict(typed=typed, common=common)
+
+
+class ReusableId:
+    """a unique id generator for resuable objects
+
+    for thread/mem_address, they can be recycled and reused
+    we need to distinguish them during whole program lifetime
+
+    """
+
+    def __init__(self):
+        self.alive = dict()
+        self.recycled = dict()
+
+    def is_alive(self, resuable) -> bool:
+        return resuable in self.alive
+
+    def unique_by(self, resuable) -> tuple[int, Any]:
+        try_alive = self.alive.get(resuable)
+
+        if try_alive:
+            return try_alive
+
+        # not alive, check if duplicate recycled
+        duplicate = self.recycled.get(resuable)
+        if not duplicate:
+            self.alive[resuable] = 0
+            return (0, resuable)
+
+        # duplicate with existing
+        this_counter = duplicate + 1
+        self.alive[resuable] = this_counter
+        return (this_counter, resuable)
+
+    def destroy_resuable(self, resuable):
+        this_counter = self.alive[resuable]
+
+        if this_counter == 0:
+            assert resuable not in self.recycled, "recycle a resuable that is not alive"
+        else:
+            assert this_counter == self.recycled[resuable] + 1, (
+                "recycle a resuable that is not the last alive"
+            )
+
+        self.recycled[resuable] = this_counter
+        del self.alive[resuable]
+
+
+def db_init(file: str):
+    con = sqlite3.connect(file)
+    cur = con.cursor()
+    # TODO refactor to meta + event (foreign id only)
+    cur.execute("CREATE TABLE IF NOT EXISTS events (process, info)")
+    cur.close()
+    con.close()
+
+
+class SingleRunRecords:
+    """
+    records for one pid
+    """
+
+    def __init__(self, id, db_file):
+        self.id = id
+        db_init(db_file)
+        self.conn = sqlite3.connect(db_file)
+        self.cur = self.conn.cursor()
+
+    def append_event(self, info: dict[str, Any]) -> None:
+        json_string = json.dumps(info)
+
+        with self.conn:
+            self.conn.execute(
+                "INSERT INTO events (process, info) VALUES (?,?)",
+                (json.dumps(self.id), json_string),
+            )
+
+        pass
+
+    def close(self):
+        self.cur.close()
+        self.conn.close()
+
+
+class AllRecords:
+    def __init__(self, db_file):
+        self.db_file = db_file
+        self.runs = {}
+
+    def close(self):
+        for key, value in self.runs.items():
+            value.close()
+
+    def by(self, id) -> SingleRunRecords:
+        if id not in self.runs:
+            self.runs[id] = SingleRunRecords(id, self.db_file)
+        return self.runs[id]
+
+    @staticmethod
+    def load(db_file):
+        conn = sqlite3.connect(db_file)
+        df = pd.read_sql_query("select * from events", conn)
+        df["info"] = df["info"].apply(json.loads)
+        conn.close()
+        return df
