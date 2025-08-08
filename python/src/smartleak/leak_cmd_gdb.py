@@ -1,7 +1,11 @@
 import gdb
 import pickle
 
-from .leak_helper_gdb import parse_file_functions, filter_shared_ptr
+from .leak_helper_gdb import (
+    parse_file_functions,
+    filter_shared_ptr,
+    AllRecords,
+)
 
 
 def gdb_function_filter_shared(from_tty):
@@ -9,12 +13,6 @@ def gdb_function_filter_shared(from_tty):
     df = parse_file_functions(lines)
     filtered = filter_shared_ptr(df)
     return filtered
-
-
-class TraceContext:
-    def __init__(self, template_type):
-        self.template_type = template_type
-        pass
 
 
 class ListLeakBreak(gdb.Command):
@@ -30,27 +28,43 @@ class ListLeakBreak(gdb.Command):
                 pickle.dump(filtered, f)
         else:
             for type, value in filtered.items():
-                print(type)
+                print(f"{type}:")
                 for function in value["function"]:
                     print(function)
 
 
-class TypedLeakTraceBreak(gdb.Breakpoint):
-    def __init__(self, trace_context, **kwargs):
+class CommonBreak(gdb.Breakpoint):
+    def __init__(self, all_records: AllRecords, info, **kwargs):
         super().__init__(**kwargs)
-        self.trace_context = trace_context
-
-    def stop(self, **kwargs):
-        return False
-
-
-class CommonLeakTraceBreak(gdb.Breakpoint):
-    def __init__(self, trace_context, **kwargs):
-        super().__init__(**kwargs)
-        self.trace_context = trace_context
+        self.all_records = all_records
+        self.info = info
 
     def stop(self):
-        return False
+        inferior = gdb.selected_inferior()
+        progspec = gdb.current_progspace()
+        records = self.all_records.by(
+            (progspec.executable_filename, inferior.num, inferior.pid)
+        )
+
+        records.append_event(self.info)
+        return True
+
+
+class TypedLeakTraceBreak(CommonBreak):
+    def __init__(self, all_records, info, **kwargs):
+        super().__init__(all_records, info, **kwargs)
+
+
+class CommonLeakTraceBreak(CommonBreak):
+    def __init__(self, all_records, info, **kwargs):
+        super().__init__(all_records, info, **kwargs)
+
+
+# gdb can debug multi process simultaneously  (even one program with multi instance)
+# different program is distinguished by inferiors
+# same program different instance is distinguished by inferior.num
+# not started program only have inferiors, but no connections
+ALL_RECORDS = None
 
 
 class BreakLeakFunction(gdb.Command):
@@ -60,27 +74,28 @@ class BreakLeakFunction(gdb.Command):
         )
 
     def invoke(self, arg, from_tty):
-        if arg:
-            print("try load")
-            with open(arg, "rb") as f:
-                filtered = pickle.load(f)
-        else:
-            print("analysis")
-            filtered = gdb_function_filter_shared(from_tty)
+        filtered = gdb_function_filter_shared(from_tty)
 
-        if filtered is None or len(filtered) == 0:
+        if not filtered:
             print("no valid function found")
             return
 
+        global ALL_RECORDS
+        if ALL_RECORDS is not None:
+            ALL_RECORDS.close()
+
+        ALL_RECORDS = AllRecords(arg or "records.sqlite3")
+        # TODO we need to check commands run before program start
+
         for type, value in filtered.items():
-            print(type)
-            for function in value["function"]:
-                print(function)
-                break_spec = " ".join(function.split(" ")[1:])
+            for row in value.itertuples():
+                info = row._asdict()
+                break_spec = " ".join(info["function"].split(" ")[1:])
+
                 if type == "common":
-                    CommonLeakTraceBreak(break_spec)
+                    CommonLeakTraceBreak(ALL_RECORDS, info, spec=break_spec)
                 else:
-                    TypedLeakTraceBreak(break_spec)
+                    TypedLeakTraceBreak(ALL_RECORDS, info, spec=break_spec)
 
 
 ListLeakBreak()

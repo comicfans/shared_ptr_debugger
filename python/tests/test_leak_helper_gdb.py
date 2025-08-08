@@ -1,4 +1,7 @@
-from smartleak.leak_helper_gdb import parse_file_functions, filter_shared_ptr
+from smartleak.leak_helper_gdb import (
+    parse_file_functions,
+    filter_shared_ptr,
+)
 
 
 def test_parse_file_functions_incorrect_str_correct_type(request):
