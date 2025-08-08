@@ -16,7 +16,7 @@ def stderr_no_output(f, exit):
             pass
 
 
-def run(gdb, init, binary, commands):
+def run(gdb, init, binary, commands: list[str | tuple[str, str] | tuple[str, int]]):
     os.environ["NO_COLOR"] = "1"
 
     stderr_log = tempfile.NamedTemporaryFile(delete=False).name
@@ -35,8 +35,19 @@ def run(gdb, init, binary, commands):
 
     process.expect(f"Reading symbols from {binary}\.\.\.")
 
-    for line in commands:
-        process.sendline(line)
+    for command in commands:
+        if isinstance(command, str):
+            process.sendline(command)
+            continue
+        assert isinstance(command, tuple)
+
+        process.sendline(command[0])
+
+        if isinstance(command[1], str):
+            process.expect(command[1])
+        else:
+            assert isinstance(command[1], int)
+            time.sleep(command[1])
 
     process.sendline("q")
     process.expect(pexpect.EOF)
