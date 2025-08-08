@@ -29,6 +29,12 @@ foreach(module pytest pip)
   endif()
 endforeach()
 
+set(MINIMUM_GDB_VERSION "14.2")
+
+if(${GDB_VERSION} STRLESS ${MINIMUM_GDB_VERSION})
+  message(FATAL_ERROR "GDB version ${GDB_VERSION} < ${MINIMUM_GDB_VERSION}")
+endif()
+
 message(STATUS "using python ${Python3_VERSION}: ${Python3_EXECUTABLE}"
                "and GDB version ${GDB_VERSION} to test : ${GDB_COMMAND}")
 
