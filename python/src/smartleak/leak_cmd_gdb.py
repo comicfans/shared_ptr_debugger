@@ -46,7 +46,7 @@ class CommonBreak(gdb.Breakpoint):
             (progspec.executable_filename, inferior.num, inferior.pid)
         )
 
-        records.append_event(EventType.SHARED, self.info)
+        records.append_event(self.info)
         return True
 
 

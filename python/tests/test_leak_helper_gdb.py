@@ -1,7 +1,6 @@
 from smartleak.leak_helper_gdb import (
     parse_file_functions,
     filter_shared_ptr,
-    AllRecords,
 )
 
 
