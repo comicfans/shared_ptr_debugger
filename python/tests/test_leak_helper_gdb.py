@@ -28,6 +28,8 @@ def test_filter_shared_ptr(request):
         # "add_ref_copy", "add_ref_lock_nothrow",
         "destroy",
         "release",
+        "constructor",
+        "destructor",
     ]:
         assert len(common[common["function_type"] == expect_type]) != 0
 

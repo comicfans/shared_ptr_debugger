@@ -3,7 +3,7 @@ target_compile_options(must_debug_symbol INTERFACE -g)
 
 set(NO_LEAK_TESTs)
 
-foreach(one local_int)
+foreach(one empty_int local_int)
   add_executable(${one} ${one}.cpp)
   target_link_libraries(${one} PRIVATE must_debug_symbol)
   list(APPEND NO_LEAK_TESTS ${one})

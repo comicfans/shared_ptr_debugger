@@ -86,6 +86,8 @@ def filter_shared_ptr(df: pd.DataFrame) -> dict[str : pd.DataFrame]:
         "add_ref_lock_nothrow": r"^bool std::_Sp_counted_base<.*>::_M_add_ref_lock_nothrow\(\)$",
         "destroy": r"^void std::_Sp_counted_base<.*>::_M_destroy\(\)$",
         "release": r"^void std::_Sp_counted_base<.*>::_M_release\(\)$",
+        "constructor": r"^void std::_Sp_counted_base<.*>::_Sp_counted_base()",
+        "destructor": r"^void std::_Sp_counted_base<.*>::~_Sp_counted_base()",
     }
 
     common_df = []

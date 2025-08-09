@@ -4,4 +4,5 @@ from .leak_helper_gdb import (
 import networkx as nx
 
 
-def analysis()
+def analysis(records_df) -> nx.Graph:
+    grouped = records_df.groupby("id")

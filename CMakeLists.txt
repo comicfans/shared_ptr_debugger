@@ -36,7 +36,7 @@ if(${GDB_VERSION} STRLESS ${MINIMUM_GDB_VERSION})
                       " python API might not supported")
 endif()
 
-message(STATUS "using python ${Python3_VERSION}: ${Python3_EXECUTABLE}"
+message(STATUS "using python ${Python3_VERSION}: ${Python3_EXECUTABLE} "
                "and GDB version ${GDB_VERSION} to test : ${GDB_COMMAND}")
 
 enable_testing()
